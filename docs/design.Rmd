@@ -50,6 +50,6 @@ The project investigates the association between pediatric type 2 diabetes and s
 ## Workflow / folder structure
 
 - `data/` → raw dataset files
-- `src/` → R scripts for analysis
+- `src/` → R markdowns for analysis
 - `assets/` → tables, figures, images
 - `docs/` → documentation (design.md, data_dictionary.md)
