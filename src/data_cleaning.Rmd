@@ -1,0 +1,150 @@
+---
+title: "data_cleaning"
+output: html_document
+date: "2026-01-01"
+---
+Download relevant
+```{r}
+#| label: packages
+#| code-summary: "Packages"
+
+# Ensures the package "pacman" is installed
+if (!require("pacman")) install.packages("pacman")
+
+#CAUTION: pacman will only load packages that are used within this script.  
+  # Review your program and load appropriate packages here.
+ pacman::p_load(
+    here,    
+    rio, 
+    Hmisc,
+    rms,
+    tidyverse, 
+    gtsummary, 
+    janitor, 
+    marginaleffects, 
+    modelsummary, 
+    broom,
+    knitr,
+    pROC,
+    lmtest,
+    labelled,
+    broom.helpers,
+    haven,
+    kableExtra,
+    flextable
+ )
+ 
+```
+
+Cleaning data
+```{r}
+
+analysis_df <- read_sas("nsch2023data.sas7bdat") %>%
+  select(
+    DIABETES, DIABETES_CURR,
+    FOODSIT, FPL_I1:FPL_I6, ACE1,
+    SC_AGE_YEARS, SC_SEX, SC_RACE_R, PHYSACTIV
+  ) %>%
+  mutate(
+    ## Outcome
+    DIABETES_C = as.integer(DIABETES == 1 & DIABETES_CURR == 1),
+    diabetes_status = factor(
+      DIABETES_C,
+      levels = c(0, 1),
+      labels = c("No Diabetes", "Diabetes")
+    ),
+
+    ## Physical activity
+    physactiv_cat = factor(
+      PHYSACTIV,
+      levels = 1:4,
+      labels = c("0 days/week", "1–3 days/week", "4–6 days/week", "7 days/week")
+    ),
+    physactiv_bin = factor(
+      if_else(PHYSACTIV >= 3, 1, 0),
+      levels = c(0, 1),
+      labels = c("Low (0–3 days)", "High (4–7 days)")
+    ),
+
+    ## Age groups
+    age_group = cut(
+      SC_AGE_YEARS,
+      breaks = c(-Inf, 5, 11, 17),
+      labels = c("0–5 years", "6–11 years", "12–17 years")
+    ),
+
+    ## Sex
+    sex = factor(
+      SC_SEX,
+      levels = c(1, 2),
+      labels = c("Male", "Female")
+    ),
+
+    ## Race/ethnicity
+    race = factor(
+      SC_RACE_R,
+      levels = c(1, 2, 3, 4, 5, 7),
+      labels = c(
+        "White, non-Hispanic",
+        "Black, non-Hispanic",
+        "AI/AN, non-Hispanic",
+        "Asian, non-Hispanic",
+        "NH/PI, non-Hispanic",
+        "Multiracial, non-Hispanic"
+      )
+    ),
+    race_collapsed = factor(
+      case_when(
+        SC_RACE_R == 1 ~ 1,
+        SC_RACE_R == 2 ~ 2,
+        SC_RACE_R == 4 ~ 3,
+        SC_RACE_R %in% c(3, 5, 7) ~ 4
+      ),
+      levels = 1:4,
+      labels = c(
+        "White, non-Hispanic",
+        "Black, non-Hispanic",
+        "Asian, non-Hispanic",
+        "Other/Multiracial"
+      )
+    ),
+
+    ## Food security
+    food_insecure = factor(
+      if_else(FOODSIT == 1, 0, 1),
+      levels = c(0, 1),
+      labels = c("Never insecure", "Somewhat/Often insecure")
+    ),
+
+    ## Economic hardship (ACE)
+    econ_hardship = factor(
+      if_else(ACE1 <= 2, 0, 1),
+      levels = c(0, 1),
+      labels = c("Never/Rarely", "Somewhat/Very often")
+    ),
+
+    ## Poverty
+    FPL_MIN = pmin(FPL_I1, FPL_I2, FPL_I3, FPL_I4, FPL_I5, FPL_I6, na.rm = TRUE),
+    fpl_category = cut(
+      FPL_MIN,
+      breaks = c(-Inf, 100, 200, 400, Inf),
+      labels = c("<100% FPL", "100–199% FPL", "200–399% FPL", "≥400% FPL")
+    ),
+
+    ## Composite hardship
+    socioeconomic_status = factor(
+      as.integer(FOODSIT >= 3 | ACE1 >= 3 | FPL_MIN < 100),
+      levels = c(0, 1),
+      labels = c("High/Med status", "Lower status")
+    )
+  ) %>%
+  filter(
+    !is.na(diabetes_status),
+    !is.na(PHYSACTIV),
+    !is.na(SC_AGE_YEARS),
+    !is.na(SC_SEX),
+    !is.na(SC_RACE_R),
+    !is.na(socioeconomic_status)
+  )
+
+```
