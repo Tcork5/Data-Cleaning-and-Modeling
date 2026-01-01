@@ -19,7 +19,7 @@ if (!require("pacman")) install.packages("pacman")
     Hmisc,
     rms,
     tidyverse, 
-    gtsummary, 
+    gtsummary,
     janitor, 
     marginaleffects, 
     modelsummary, 

@@ -1,0 +1,55 @@
+---
+title: "design"
+output: html_document
+---
+## Research Question
+
+Does a family’s socioeconomic status affect the likelihood that their children will be diagnosed with type 2 diabetes?
+
+## Study Design / Source Data
+
+**Study Design**
+This cross-sectional study uses data from the 2023 National Survey of Children's Health, a survey designed to collect information about the physical, emotional, and social health of children in the United States. 
+
+**Study Population**
+Children aged 6-17 years with complete data on diabetes status, physical activity levels, economic status indicators, and key demographic covariates.
+Sample Size of Analysis: approximately 33,000 children
+
+**Purpose of Analysis:** 
+The project investigates the association between pediatric type 2 diabetes and socioeconomic status, adjusting for relevant covariates such as age, sex, race, and physical activity.
+
+## Analysis Plan
+
+**Variables of Interest:**  
+1. **Diabetes status**
+   - `DIABETES`: Ever diagnosed with type 2 diabetes (1 = Yes, 0 = No)
+   - `DIABETES_CURR`: Current diabetes status
+2. **Socioeconomic status**
+   - `FOODSIT`: Food insecurity status
+   - `FPL_I1:FPL_I6`: Family poverty level indicators
+   - `ACE1`: Adverse childhood experiences
+3. **Covariates**
+   - `SC_AGE_YEARS`: Age in years
+   - `SC_SEX`: Sex (Male/Female)
+   - `SC_RACE_R`: Race/ethnicity
+   - `PHYSACTIV`: Physical activity level
+
+**Statistical Methods**
+2x2 crosstab, univariate and multivariate logistic regression, sensitivity analysis
+
+**Steps in data cleaning / transformations:**
+1. Load required packages using pacman
+2. Import the dataset
+3. Filter dataset for variables of interest
+4. Combine variables to determine diabetes status
+5. Re-level categorical variables
+6. Combine variables to determine socioeconomic status
+7. Remove NAs for key variables
+
+
+## Workflow / folder structure
+
+- `data/` → raw dataset files
+- `src/` → R scripts for analysis
+- `assets/` → tables, figures, images
+- `docs/` → documentation (design.md, data_dictionary.md)
