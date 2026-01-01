@@ -181,7 +181,8 @@ backwardmod <- step(Model2, direction = "backward")
 
 Analysis of covariates with odds ratios and confidence intervals
 ```{r}
-table5 <- analysis_df %>%
+# Table 6. Analysis of covariates
+table6a <- analysis_df %>%
   select(diabetes_status, race_collapsed) %>%
   tbl_uvregression(
     method = glm,
@@ -192,7 +193,7 @@ table5 <- analysis_df %>%
   ) %>%
   add_n(location = "level")
 
-table6 <- analysis_df %>%
+table6b <- analysis_df %>%
   select(diabetes_status, physactiv_cat) %>%
   tbl_uvregression(
     method = glm,
@@ -203,7 +204,7 @@ table6 <- analysis_df %>%
   ) %>%
   add_n(location = "level")
 
-table7 <- analysis_df %>%
+table6c <- analysis_df %>%
   select(diabetes_status, age_group) %>%
   tbl_uvregression(
     method = glm,
@@ -214,15 +215,23 @@ table7 <- analysis_df %>%
   ) %>%
   add_n(location = "level")
 
-tbl_stack(list(table5, table6, table7)) %>%
-  modify_caption("**Table 5. Association Between Covariates and Type 2 Diabetes**") %>%
+table6 <- tbl_stack(list(table6a, table6b, table6c)) %>%
+  modify_caption("**Table 6. Association Between Covariates and Type 2 Diabetes**") %>%
   bold_labels()
+
+table6gt <- as_gt(table6)
+
+gtsave(table6gt, here("assets", "table6.png"))
+
 ```
+
 
 
 
 Sensitivity Analysis
 ```{r}
+# Table 7. Sensitivity Analysis
+
 # Primary analysis
 sens_primary <- glm(diabetes_status ~ socioeconomic_status,
                    data = analysis_df,
@@ -325,13 +334,11 @@ sens_results$OR_CI <- paste0(sens_results$OR, " (",
                              sens_results$CI_lower, ", ",
                              sens_results$CI_upper, ")")
 
-table5_display <- sens_results %>%
+table7_display <- sens_results %>%
   select(Analysis, Cases_Total, OR_CI)
 
-print(table5_display)
-
 # Save as flextable
-table5_ft <- flextable(table5_display) %>%
+table7ft <- flextable(table7_display) %>%
   set_header_labels(
     Analysis = "Analysis Specification",
     Cases_Total = "N Cases/Total",
@@ -339,8 +346,8 @@ table5_ft <- flextable(table5_display) %>%
   ) %>%
   theme_booktabs() %>%
   autofit() %>%
-  add_header_lines("Table 5. Sensitivity Analyses")
+  add_header_lines("Table 7. Sensitivity Analyses")
 
-table5_ft
+save_as_image(table7ft, path = here("assets", "table7.png"))
 
 ```
