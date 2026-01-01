@@ -33,6 +33,7 @@ if (!require("pacman")) install.packages("pacman")
     kableExtra,
     flextable,
     webshot,
+    webshot2,
     gt,
     gtsummary
  )
@@ -78,7 +79,7 @@ modify_spanning_header(c("stat_1", "stat_2") ~ "**Diabetes Cases**")
 
 table2ft <- as_flex_table(table2)
 
-save_as_image(table2ft, path = "assets/table2.png")
+save_as_image(table2ft, path = here("assets", "table2.png"))
 
 ```
 
@@ -102,7 +103,27 @@ modify_spanning_header(c("stat_1", "stat_2") ~ "**Economic Hardship (1 = Yes)**"
 
 table3ft <- as_flex_table(table3)
 
-save_as_image(table3ft, path = here("assets","table3.png"))
+save_as_image(table3ft, path = here("assets", "table3.png"))
+```
+
+```{r}
+# Table 4. 2x2 crosstab of Diabetes and Socioeconomic status
+table5 <- analysis_df %>%
+  tabyl(socioeconomic_status, diabetes_status) %>%
+  adorn_totals(where = c("row", "col")) %>%
+  adorn_percentages("col") %>%
+  adorn_pct_formatting(digits = 1) %>%
+  adorn_ns("front") %>%
+  knitr::kable() %>%
+  kable_styling(full_width = FALSE) %>%
+  row_spec(0, background = "white") %>%  # header row
+  row_spec(1:2, background = "white")  # all body rows
+
+save_kable(
+  table5,
+  file = here("assets", "table4.png")
+)
+
 ```
 
 Creating univariate model
@@ -118,8 +139,8 @@ summary(Model1)
 
 Calculating the odds ratio with CI
 ```{r}
-# Table 5. OR and CI using low economic hardship group as a reference
-table4 <- analysis_df %>%
+# Table 4. OR and CI using low economic hardship group as a reference
+table5 <- analysis_df %>%
   select(diabetes_status, socioeconomic_status) %>%
   tbl_uvregression(
     method = glm,
@@ -130,28 +151,15 @@ table4 <- analysis_df %>%
   ) %>%
   add_n(location = "level")
 
-table4 <- tbl_stack(list(table4)) %>%
+table5 <- tbl_stack(list(table5)) %>%
   modify_caption("**Table 3. Association Between Economic Status and Type 2 Diabetes**") %>%
   bold_labels()
 
-table4_gt <- as_gt(table4)
+table5gt <- as_gt(table5)
+
+gtsave(table5gt, here("assets", "table5.png"))
 
 ```
-
-```{r}
-#2x2 crosstab of Diabetes and Socioeconomic status
-analysis_df %>%
-  tabyl(socioeconomic_status, diabetes_status) %>%
-  adorn_totals(where = c("row", "col")) %>%
-  adorn_percentages("col") %>%
-  adorn_pct_formatting(digits = 1) %>%
-  adorn_ns("front") %>%
-  knitr::kable() %>%
-  kable_styling(full_width = FALSE) %>%
-  row_spec(0, background = "white") %>%  # header row
-  row_spec(1:2, background = "white")  # all body rows
-```
-
 
 
 Create multivariate model
@@ -168,40 +176,6 @@ Finding the most parsimonious model using backward AIC selection
 ```{r}
 # Backward selection using AIC
 backwardmod <- step(Model2, direction = "backward")
-```
-
-
-Wald Test
-```{r}
-wt_race <- waldtest(Model2, "race_collapsed", test = "Chisq")
-wt_phys <- waldtest(Model2, "physactiv_cat", test = "Chisq")
-wt_age  <- waldtest(Model2, "age_group", test = "Chisq")
-wt_econ <- waldtest(Model2, "socioeconomic_status", test = "Chisq")
-
-# Helper function to extract results
-extract_wald <- function(wt_obj, varname) {
-  data.frame(
-    Variable = varname,
-    Chisq = wt_obj$Chisq[2],       # second row has the test
-    Df = wt_obj$Df[2],
-    p_value = wt_obj$`Pr(>Chisq)`[2]
-  )
-}
-
-# Combine results
-wald_table <- bind_rows(
-  extract_wald(wt_race, "Race"),
-  extract_wald(wt_phys, "Physical Activity"),
-  extract_wald(wt_age, "Age Group"),
-  extract_wald(wt_econ, "Economic Hardship")
-)
-
-# Format p-values nicely
-wald_table <- wald_table %>%
-  mutate(p_value = signif(p_value, 3))
-
-wald_table
-
 ```
 
 

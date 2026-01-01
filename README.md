@@ -15,7 +15,7 @@ The expected structure includes:
 ## Reproducibility
 To reproduce the analysis:
 1. Place the dataset in a local `data/` folder
-2. Update the file path in `analysis.R`
+2. Update the file path in `data_cleaning.Rmd`
 3. Run the script
 
 ## Tools Used

@@ -39,7 +39,7 @@ if (!require("pacman")) install.packages("pacman")
 Cleaning data
 ```{r}
 
-analysis_df <- read_sas("nsch2023data.sas7bdat") %>%
+analysis_df <- read_sas(here("data", "nsch2023data.sas7bdat")) %>%
   select(
     DIABETES, DIABETES_CURR,
     FOODSIT, FPL_I1:FPL_I6, ACE1,
